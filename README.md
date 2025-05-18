@@ -2,6 +2,15 @@
 
 This project is part of a pre-exam assignment for the Databases module at Hochschule für Technik Stuttgart. It demonstrates the implementation of a secure login and registration system using PHP, MySQL, and InfinityFree hosting.
 
+🤝 Group Collaboration
+
+This project was developed by a group of three students. To support collaboration, testing, and shared access, we hosted the application on **InfinityFree** with a **remote MySQL database**.
+
+This allowed us to:
+- Work from different locations
+- Share and test changes on a live server
+- Simulate a real-world web development workflow
+
 🚀 Features 
 
 User registration with email, password, and username

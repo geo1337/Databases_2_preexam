@@ -7,20 +7,39 @@ if (!isset($_SESSION['username'])) {
     exit;
 }
 
-$data = json_decode(file_get_contents("php://input"), true);
+include 'config.php';
+$conn = new mysqli($host, $username, $password, $dbname);
+if ($conn->connect_error) {
+    echo json_encode(['success' => false, 'error' => 'Database connection failed']);
+    exit;
+}
 
+// Get current user's role
+$currentUser = $_SESSION['username'];
+$roleStmt = $conn->prepare("
+    SELECT r.role_name
+    FROM users u
+    JOIN roles r ON u.role_id = r.id
+    WHERE u.username = ?
+");
+$roleStmt->bind_param("s", $currentUser);
+$roleStmt->execute();
+$roleStmt->bind_result($currentRole);
+$roleStmt->fetch();
+$roleStmt->close();
+
+if ($currentRole !== 'admin') {
+    echo json_encode(['success' => false, 'error' => 'Access denied: only admins can edit users']);
+    exit;
+}
+
+// Validate input
+$data = json_decode(file_get_contents("php://input"), true);
 if (
     !isset($data['id'], $data['field'], $data['value']) ||
     !in_array($data['field'], ['username', 'email'])
 ) {
     echo json_encode(['success' => false, 'error' => 'Invalid input']);
-    exit;
-}
-
-include 'config.php';
-$conn = new mysqli($host, $username, $password, $dbname);
-if ($conn->connect_error) {
-    echo json_encode(['success' => false, 'error' => 'Database connection failed']);
     exit;
 }
 
@@ -37,6 +56,7 @@ if ($field === 'username' && $value === '') {
     exit;
 }
 
+// Check for duplicate username/email
 $check = $conn->prepare("SELECT id FROM users WHERE $field = ? AND id != ?");
 $check->bind_param("si", $value, $id);
 $check->execute();
@@ -48,6 +68,7 @@ if ($check->num_rows > 0) {
 }
 $check->close();
 
+// Update user
 $stmt = $conn->prepare("UPDATE users SET $field = ? WHERE id = ?");
 if (!$stmt) {
     echo json_encode(['success' => false, 'error' => 'SQL error']);

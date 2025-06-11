@@ -19,10 +19,11 @@ $conn = new mysqli($host, $username, $password, $dbname);
 
 $serverErrorMessage = "";
 $serverErrorMessage_2 = "";
- $serverErrorMessage_3 = "";
+$serverErrorMessage_3 = "";
 $serverSuccessMessage = "";
 $stayFlipped = false;
 
+// throwing connection error
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
@@ -31,6 +32,7 @@ if ($conn->connect_error) {
 // Login handling
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signin'])) {
        
+    // tracking ip and setting a timestamp
     $ip_address = $_SERVER['REMOTE_ADDR'];
     $login_time = date('Y-m-d H:i:s');
     $username_attempt = strtolower(trim($_POST['your_name']));
@@ -38,18 +40,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signin'])) {
     $success = false;
     $user_id = null;
 
+    // prepating SQL Query and binding the username to the data type string
     $stmt = $conn->prepare("SELECT id, password_hash FROM users WHERE username = ?");
     $stmt->bind_param("s", $username_attempt);
     $stmt->execute();
     $stmt->store_result();
 
+    
     if ($stmt->num_rows === 1) {
         $stmt->bind_result($user_id, $hash);
         $stmt->fetch();
-
+        // comparing password the to hashed password in the same row as the entred username
         if (password_verify($password, $hash)) {
             $success = true;
             $_SESSION['username'] = $username_attempt;
+
+            // notification function
             function sendPushbulletNotification($title, $body) {
 
     global $pushbullet_token;
@@ -71,7 +77,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signin'])) {
     curl_exec($ch);
     curl_close($ch);
 }
-
+// JSON Body of the notification message (Post Request)
 sendPushbulletNotification(
     "🔐 Login Alert",
     "$username_attempt just logged in from IP $ip_address at $login_time"
@@ -84,7 +90,7 @@ sendPushbulletNotification(
     $stmt->close();
 
  
- 
+    // preparing data types to insert int othe login_tracking_table
     $user_agent = $_SERVER['HTTP_USER_AGENT'];
     $browser_name = $_POST['browser_name'] ?? null;
     $browser_version = $_POST['browser_version'] ?? null;
@@ -127,7 +133,7 @@ sendPushbulletNotification(
     $stmt->execute();
     $stmt->close();
 
-    // Redirect only if successful
+    // Redirect on sucessfull login attempt
     if ($success) {
         header("Location: dashboard.php");
         exit;
@@ -140,15 +146,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     $stayFlipped = true;
     $name = trim($_POST['name']);
     $email = trim($_POST['email']);
-    $pass = $_POST['pass'];  // Assume already checked via JS
-    $re_pass = $_POST['re_pass']; // Still needed for DB insert
+    $pass = $_POST['pass']; 
+    $re_pass = $_POST['re_pass'];
 
     // Check if user already exists
     $checkStmt = $conn->prepare("SELECT id FROM users WHERE email = ? OR username = ?");
     $checkStmt->bind_param("ss", $email, $name);
     $checkStmt->execute();
     $checkStmt->store_result();
-
+    
+    // throwing erros if the username or email is already in a database row
     if ($checkStmt->num_rows > 0) {
         $serverErrorMessage_3 = "❌ Username or Email already exists.";
         $serverErrorMessage_2 = "❌ Registration failed. Try again.";
@@ -171,6 +178,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     $checkStmt->close();
 }
 ?>
+<!--Login form template -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -292,7 +300,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
 </div>
     </div>
 
-    <!-- JS -->
+    <!-- JS for flip animation -->
     <script src="vendor/jquery/jquery.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -336,7 +344,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!isValid) e.preventDefault();
     });
 
-    // === Validation functions ===
+    // validation functions
 
     function validateName() {
         if (name.value.trim() === "") {
@@ -378,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return true;
     }
 
-    // === Error display functions ===
+    // function for dynamic error messages based on the validate functions
 
     function showError(input, message) {
         const group = input.closest(".form-group");
@@ -409,16 +417,19 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 <?php endif; ?>
+
+<!-- tracking script -->
 <script>
+
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("login-form");
 
-    // Create envFields object first
+ 
     const envFields = {
         browser_name: navigator.userAgent.match(/(firefox|msie|chrome|safari|edge|opera)/i)?.[0] || "unknown",
         browser_version: navigator.userAgent,
-        os_name: navigator.platform,  // temporary, will be replaced
-        os_version: "unknown",        // temporary, will be replaced
+        os_name: navigator.platform,  
+        os_version: "unknown",        
         device_type: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
         resolution: `${screen.width}x${screen.height}`,
         graphics_vendor: getWebGLInfo().vendor,
@@ -433,7 +444,7 @@ document.addEventListener("DOMContentLoaded", () => {
     envFields.os_name = osInfo.os;
     envFields.os_version = osInfo.version;
 
-    // Create hidden inputs from envFields
+    // Create hidden inputs 
     for (const key in envFields) {
         const input = document.createElement("input");
         input.type = "hidden";

@@ -1,9 +1,30 @@
 <?php
 session_start();
+
+// If the session cookie is not set (user not logged in) --> redirect to the login page
 if (!isset($_SESSION['username'])) {
     header("Location: index.php");
     exit;
 }
+
+
+// destorying seassion after 30 min --> logout
+$timeoutDuration = 1800;
+
+
+if (isset($_SESSION['LAST_ACTIVITY'])) {
+    
+    if (time() - $_SESSION['LAST_ACTIVITY'] > $timeoutDuration) {
+        session_unset();    
+        session_destroy();   
+        header("Location: index.php?timeout=1");
+        exit;
+    }
+}
+
+
+$_SESSION['LAST_ACTIVITY'] = time();
+
 
 include 'config.php';
 
@@ -39,6 +60,8 @@ $result = $conn->query("
 <html>
 <head>
     <title>Dashboard</title>
+<!--cdns for bootstrap and sheetjs -->
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -52,6 +75,10 @@ $result = $conn->query("
 td {
     width: 200px !important;
     max-width: 200px !important;
+}
+
+#edit-success {
+    display: none;
 }
  </style>
 </head>
@@ -77,6 +104,7 @@ td {
     </script>
   
     <?php endif; ?>
+        <div class="alert alert-success" id="edit-success">✅ User edited successfully.</div>
 <div class="input-group mb-3 w-50">
   <span class="input-group-text" id="search-icon">
     <i class="bi bi-search"></i>
@@ -149,6 +177,14 @@ td {
 </button>
 
 </div>
+
+<!--
+  Handle inline editing of user fields (username, email):
+  - On click of the edit icon, replace the text with an input field
+  - When Enter is pressed, send the updated value via fetch POST to edit_user_ajax.php
+  - If the update is successful, replace the input with the new value and show a success alert
+  - If the update fails or is cancelled (Escape or blur), revert to the original value
+            -->
 <script>
     document.querySelectorAll('.edit-btn').forEach(button => {
     button.addEventListener('click', function () {
@@ -191,6 +227,25 @@ td {
             })
             .then(data => {
                 replaceWithSpan(data.success ? newValue : originalText);
+       
+ if (data.success) {
+    const alertBox2 = document.getElementById("edit-success");
+    if (alertBox2) {
+        alertBox2.style.display = 'block';
+        alertBox2.style.opacity = 1;
+
+        setTimeout(() => {
+            alertBox2.style.transition = "opacity 0.5s ease-out";
+            alertBox2.style.opacity = 0;
+
+            setTimeout(() => {
+                alertBox2.style.display = 'none'; 
+                alertBox2.style.opacity = 1;      
+            }, 500);
+        }, 5000);
+    }
+}
+
                 if (!data.success) alert("❌ " + data.error);
             })
             .catch((err) => {
@@ -202,7 +257,7 @@ td {
 
         const onKeydown = (e) => {
             if (e.key === 'Enter') {
-                input.removeEventListener('blur', onBlur); // ✅ Prevent double replace
+                input.removeEventListener('blur', onBlur); 
                 const newValue = input.value.trim();
                 if (newValue === "" || newValue === originalText) {
                     replaceWithSpan(originalText);
@@ -210,7 +265,7 @@ td {
                 }
                 handleEnter(newValue);
             } else if (e.key === 'Escape') {
-                input.removeEventListener('blur', onBlur); // ✅ Prevent double replace
+                input.removeEventListener('blur', onBlur); 
                 replaceWithSpan(originalText);
             }
         };
@@ -225,6 +280,7 @@ td {
 });
 
 </script>
+<!-- export function with sheetjs -->
 <script>
 
 function exportTableToExcel(tableId, filename = 'data') {
@@ -236,7 +292,7 @@ function exportTableToExcel(tableId, filename = 'data') {
         const cells = row.querySelectorAll('th, td');
         const rowData = [];
 
-        for (let i = 0; i < cells.length - 1; i++) { // exclude last column
+        for (let i = 0; i < cells.length - 1; i++) { // exclude last column since there are only icons
             rowData.push(cells[i].innerText);
         }
 
@@ -250,10 +306,12 @@ function exportTableToExcel(tableId, filename = 'data') {
 }
 
 </script>
+
+<!--looping through all table cells and comparing it to the input value from the searchbar -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const searchInput = document.getElementById("tableSearch");
-    const table = document.getElementById("our_table"); // Replace with actual ID
+    const table = document.getElementById("our_table"); 
     const rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
 
     searchInput.addEventListener("input", function () {

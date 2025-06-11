@@ -12,6 +12,28 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Check current user's role
+$currentUser = $_SESSION['username'];
+$roleStmt = $conn->prepare("
+    SELECT r.role_name 
+    FROM users u
+    JOIN roles r ON u.role_id = r.id
+    WHERE u.username = ?
+");
+$roleStmt->bind_param("s", $currentUser);
+$roleStmt->execute();
+$roleStmt->bind_result($currentRole);
+$roleStmt->fetch();
+$roleStmt->close();
+
+if ($currentRole !== 'admin') {
+    $conn->close();
+    echo "<script>alert('Access denied: only admins can delete users!'); window.location.href = 'dashboard.php';</script>";
+    exit;
+}
+
+
+// Only proceed if ID is valid
 if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     $id = intval($_GET['id']);
 
@@ -30,7 +52,7 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     }
 
     // Prevent deleting yourself
-    if (strtolower($userToDelete) === strtolower($_SESSION['username'])) {
+    if (strtolower($userToDelete) === strtolower($currentUser)) {
         $conn->close();
         header("Location: dashboard.php?error=self_delete");
         exit;

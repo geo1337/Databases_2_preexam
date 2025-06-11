@@ -113,23 +113,69 @@ $pushbullet_token = "your_pushbullet_token";
 
 Run through the following scenarios to verify that all key features are working correctly:
 
-- 📝 **Register a new user**  
-  Fill out the registration form and ensure the user is saved in the database and visible in the dashboard table.
+---
 
-- 🔐 **Log in with valid credentials**  
-  Confirm that login works and that a **Pushbullet notification** is sent to your connected device.
+### ✅ Core Functionality
 
-- ❌ **Try logging in with incorrect credentials**  
-  Ensure the login fails, and the attempt is still logged in the `login_tracking_table`.
+📝 **Register a new user**  
+Fill out the registration form and ensure the user is saved in the database and visible in the dashboard table.
 
-- 👨‍💼 **Log in as an admin**  
-  Edit or delete another user from the dashboard. Confirm that changes are reflected in real time.
+🔐 **Log in with valid credentials**  
+Confirm that login works and that a Pushbullet notification is sent to your connected device, including username, IP address, and timestamp.
 
-- 📁 **Export user table to Excel**  
-  Click the **export** button and verify that the downloaded `.xlsx` file contains accurate user data.
+❌ **Try logging in with incorrect credentials**  
+Ensure the login fails and the attempt is still logged in the `login_tracking_table` with environment details.
 
-- ⏱️ **Test session timeout**  
-  Leave the session inactive for 30+ minutes, then try to navigate the dashboard. You should be logged out and redirected to the login page.
+👨‍💼 **Log in as an admin**  
+Edit or delete another user from the dashboard. Confirm that changes are reflected in real time using AJAX.
 
-- 📊 **Verify login tracking**  
-  Use phpMyAdmin to open the `login_tracking_table` and confirm that details such as browser, OS, IP, and login success status are stored correctly.
+📁 **Export user table to Excel**  
+Click the export button and verify that the downloaded `.xlsx` file contains accurate and up-to-date user data.
+
+⏱️ **Test session timeout**  
+Leave the session inactive for 30+ minutes, then try navigating the dashboard. You should be logged out and redirected to the login page.
+
+📊 **Verify login tracking**  
+Use phpMyAdmin to inspect the `login_tracking_table`. Ensure details like browser, OS, resolution, and login success status are accurately recorded.
+
+---
+
+### 🧪 Extended Scenarios
+
+🔁 **Attempt direct dashboard access without login**  
+Try navigating to `/dashboard.php` directly. You should be redirected to the login page.
+
+🧍 **Try deleting your own admin account**  
+Ensure the system disables the delete button and prevents self-deletion.
+
+♻️ **Edit username or email via inline buttons**  
+Use the inline pencil icon to edit user info. Confirm the update is submitted via AJAX and reflected instantly.
+
+🚫 **Register with an existing username or email**  
+System should block the duplicate and show an appropriate error.
+
+📤 **Export after editing**  
+Make changes to user data and then export. Check that the exported Excel reflects the new values.
+
+🧪 **Leave required fields empty**  
+Test client-side and server-side validation. Submitting incomplete forms should be prevented.
+
+🔧 **Manipulate session cookies**  
+Try tampering with cookies or the session. You should be logged out or blocked from accessing restricted pages.
+
+🌍 **Login from different browsers or devices**  
+Perform logins from various environments. Confirm that all sessions are tracked with accurate metadata.
+
+🍪 **Disable cookies and try logging in**  
+Check that login still works and the system correctly detects cookies as disabled.
+
+📶 **Check session extension through activity**  
+Keep interacting with the dashboard (editing, searching) and confirm that the session doesn’t expire prematurely.
+
+---
+
+### 🔍 Advanced or Edge Case Testing Scenarios
+🧾 Try SQL injection manually (e.g., in login or search input)
+Enter inputs like ' OR 1=1 -- into login or search fields. 
+
+🏋️ Stress test the user table: Add 100+ fake users and ensure the search, edit, and export features still perform smoothly.

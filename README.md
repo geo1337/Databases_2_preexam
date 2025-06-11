@@ -91,6 +91,10 @@ CREATE TABLE login_tracking_table (
 - 📊 All login attempts — even failed ones — are **fully logged** with browser, OS, IP, and environment data
 
 ---
+> ⚠️ **Important:**  
+
+> The `config.php` file is **not included** in this repository for security reasons.  
+> It has been added to the `.gitignore` file to prevent sensitive credentials from being exposed.
 
 ## ⚙️ Example: `config.php` File
 

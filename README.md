@@ -1,4 +1,4 @@
-# 💻 Full-Stack Login & User Management System with PHP and MySQL
+# 💻 Full-Stack User Authentication / Tracking and Dashboard System
 
 This project was developed as a pre-exam assignment for the **Databases II module (Summer Semester 2025)** at **Hochschule für Technik Stuttgart**. It demonstrates the implementation of a secure, role-based login and registration system with a dynamic dashboard, login environment tracking, and real-time admin features.
 
@@ -48,13 +48,17 @@ CREATE TABLE users (
     FOREIGN KEY (role_id) REFERENCES roles(id)
 );
 
- `roles` Table
-
+```
+###  `roles` Table
+```sql
 CREATE TABLE roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     role_name VARCHAR(50) NOT NULL
 );
-`login_tracking_table` Table
+```
+###  `login_tracking` Table
+```sql
+
 CREATE TABLE login_tracking_table (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
@@ -76,43 +80,52 @@ CREATE TABLE login_tracking_table (
     cookies_enabled TINYINT(1),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+```
+## 🛡️ Security Practices
 
-🛡️ Security Practices
-Passwords stored using password_hash() and verified with password_verify()
+- 🔒 Passwords are securely stored using PHP’s `password_hash()` and verified via `password_verify()`
+- 🛡️ SQL injection is prevented using **prepared statements** (`bind_param`)
+- ⏳ Inactive sessions are automatically destroyed after **30 minutes**
+- 🧱 Server access is protected with `.htaccess` and `.htpasswd`
+- 👮 Role-based access control ensures that **only admins** can edit or delete users
+- 📊 All login attempts — even failed ones — are **fully logged** with browser, OS, IP, and environment data
 
-SQL injection prevention via prepared statements (bind_param)
+---
 
-30-minute session timeout for inactive users
+## ⚙️ Example: `config.php` File
 
-.htaccess and .htpasswd for server-level protection
+The `config.php` file securely stores your sensitive credentials and tokens. Here's a sample:
 
-Role-based access: only admins can edit or delete users
-
-Login attempts logged, even failed ones, with full environment info
-
-
-The config.php file securely stores your configuration:
-
-php
-Kopieren
-Bearbeiten
+```php
+<?php
 $host = "localhost";
 $username = "db_user";
 $password = "db_pass";
 $dbname = "your_db";
 $pushbullet_token = "your_pushbullet_token";
+?>
+```
+## 🧪 Testing Scenarios
 
-🧪 Testing Scenarios
-Register a new user and confirm it's saved
+Run through the following scenarios to verify that all key features are working correctly:
 
-Login and confirm the Pushbullet notification
+- 📝 **Register a new user**  
+  Fill out the registration form and ensure the user is saved in the database and visible in the dashboard table.
 
-Try logging in with incorrect credentials (check that it's tracked)
+- 🔐 **Log in with valid credentials**  
+  Confirm that login works and that a **Pushbullet notification** is sent to your connected device.
 
-Use an admin account to edit or delete other users
+- ❌ **Try logging in with incorrect credentials**  
+  Ensure the login fails, and the attempt is still logged in the `login_tracking_table`.
 
-Export table data and open in Excel
+- 👨‍💼 **Log in as an admin**  
+  Edit or delete another user from the dashboard. Confirm that changes are reflected in real time.
 
-Wait 30+ minutes of inactivity to verify session timeout
+- 📁 **Export user table to Excel**  
+  Click the **export** button and verify that the downloaded `.xlsx` file contains accurate user data.
 
-Check tracking data in the login_tracking_table
+- ⏱️ **Test session timeout**  
+  Leave the session inactive for 30+ minutes, then try to navigate the dashboard. You should be logged out and redirected to the login page.
+
+- 📊 **Verify login tracking**  
+  Use phpMyAdmin to open the `login_tracking_table` and confirm that details such as browser, OS, IP, and login success status are stored correctly.

@@ -26,7 +26,7 @@ This project was developed as a pre-exam assignment for the **Databases II modul
 | Component    | Technology              |
 |--------------|--------------------------|
 | Frontend     | HTML, CSS, JavaScript, Bootstrap, jQuery |
-| Backend      | PHP    |
+| Backend      | PHP, SQL    |
 | Database     | MySQL        & phpMyAdmin            |
 | Hosting      | [InfinityFree](https://www.infinityfree.net) |
 | APIs         | [Pushbullet API](https://docs.pushbullet.com/) |

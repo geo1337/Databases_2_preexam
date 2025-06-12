@@ -17,6 +17,7 @@ This project was developed as a pre-exam assignment for the **Databases II modul
 - ✅ Client-side validation for all form fields
 - 🔒 Server-side protection with `.htaccess` authentication
 - 🌐 Responsive and modern UI (Bootstrap)
+- 📊 Modern animated Charts (Chart.js)
 
 ---
 
@@ -29,7 +30,7 @@ This project was developed as a pre-exam assignment for the **Databases II modul
 | Database     | MySQL        & phpMyAdmin            |
 | Hosting      | [InfinityFree](https://www.infinityfree.net) |
 | APIs         | [Pushbullet API](https://docs.pushbullet.com/) |
-| Libraries    | [SheetJS](https://docs.sheetjs.com/) for Excel export
+| Libraries    | [SheetJS](https://docs.sheetjs.com/) for Excel export, [Chart.js](https://www.chartjs.org/)for rendering the charts
 
 ---
 
@@ -135,8 +136,11 @@ Click the export button and verify that the downloaded `.xlsx` file contains acc
 ⏱️ **Test session timeout**  
 Leave the session inactive for 30+ minutes, then try navigating the dashboard. You should be logged out and redirected to the login page.
 
-📊 **Verify login tracking**  
+🔎 **Verify login tracking**  
 Use phpMyAdmin to inspect the `login_tracking_table`. Ensure details like browser, OS, resolution, and login success status are accurately recorded.
+
+📊 **View real-time login statistics**
+Log in as an admin to see two dynamic pie charts showing the success rate of login attempts and the distribution of device types, rendered using Chart.js based on live tracking data.
 
 ---
 
@@ -171,6 +175,9 @@ Check that login still works and the system correctly detects cookies as disable
 
 📶 **Check session extension through activity**  
 Keep interacting with the dashboard (editing, searching) and confirm that the session doesn’t expire prematurely.
+
+📊 **Verify Chart.js login statistics**
+Perform one successful and one failed login, then refresh the dashboard. Use phpMyAdmin to confirm that the chart data matches the entries in the login_tracking_table for success rates and device types.
 
 ---
 

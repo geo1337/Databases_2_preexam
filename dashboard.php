@@ -80,6 +80,15 @@ td {
 #edit-success {
     display: none;
 }
+
+.chart-canvas {
+    max-width: 300px;
+    max-height: 300px;
+    width: 100%;
+    height: auto;
+    margin: auto;
+}
+
  </style>
 </head>
 <body class="p-4 bg-light">
@@ -175,6 +184,51 @@ td {
 <button onclick="exportTableToExcel('our_table', 'Database')" class="btn btn-success">
   <i class="bi bi-download me-1"></i> Export
 </button>
+<div class="row mt-4">
+  <div class="col-md-6 text-center">
+    <h5>Login Success Ratio</h5>
+    <canvas id="loginChart" class="chart-canvas"></canvas>
+  </div>
+  <div class="col-md-6 text-center">
+    <h5>Device Type Distribution</h5>
+    <canvas id="deviceChart" class="chart-canvas"></canvas>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+fetch('get_chart_data.php')
+  .then(res => res.json())
+  .then(data => {
+    const loginChart = new Chart(document.getElementById('loginChart'), {
+      type: 'pie',
+      data: {
+        labels: ['Successful Logins', 'Failed Logins'],
+        datasets: [{
+          label: 'Login Results',
+          data: [data.logins.success, data.logins.failure],
+          backgroundColor: ['#28a745', '#dc3545'],
+        }]
+      }
+    });
+
+    const deviceLabels = Object.keys(data.devices);
+    const deviceCounts = Object.values(data.devices);
+
+    const deviceChart = new Chart(document.getElementById('deviceChart'), {
+      type: 'pie',
+      data: {
+        labels: deviceLabels,
+        datasets: [{
+          label: 'Device Types',
+          data: deviceCounts,
+          backgroundColor: ['#007bff', '#ffc107', '#6c757d', '#17a2b8'],
+        }]
+      }
+    });
+  })
+  .catch(err => console.error("Chart data fetch error:", err));
+</script>
+
 
 </div>
 
@@ -323,6 +377,41 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+fetch('get_chart_data.php')
+  .then(res => res.json())
+  .then(data => {
+    const loginChart = new Chart(document.getElementById('loginChart'), {
+      type: 'pie',
+      data: {
+        labels: ['Successful Logins', 'Failed Logins'],
+        datasets: [{
+          label: 'Login Results',
+          data: [data.logins.success, data.logins.failure],
+          backgroundColor: ['#28a745', '#dc3545'],
+        }]
+      }
+    });
+
+    const deviceLabels = Object.keys(data.devices);
+    const deviceCounts = Object.values(data.devices);
+
+    const deviceChart = new Chart(document.getElementById('deviceChart'), {
+      type: 'pie',
+      data: {
+        labels: deviceLabels,
+        datasets: [{
+          label: 'Device Types',
+          data: deviceCounts,
+          backgroundColor: ['#007bff', '#ffc107', '#6c757d', '#17a2b8'],
+        }]
+      }
+    });
+  })
+  .catch(err => console.error("Chart data fetch error:", err));
 </script>
 
 </body>
